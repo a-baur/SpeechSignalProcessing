@@ -82,7 +82,7 @@ def compute_istft(stft: np.ndarray, sampling_rate: int, frame_shift: int, synthe
     return time_signal
 
 
-def plot_spectorgram(data, samplerate, frame_length, frame_shift, window="hann", fig=None, ax=None):
+def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann", fig=None, ax=None):
     v_analysis_window = get_window(window, get_index_from_time(frame_length / 1000, samplerate))
     m_stft, v_freq, v_time = compute_stft(data, samplerate, frame_length, frame_shift, v_analysis_window)
 
@@ -107,7 +107,7 @@ def plot_with_different_parameters(data, samplerate):
 
     fig, axes = plt.subplots(3, 1, figsize=(10, 10))
 
-    plot_spectorgram(
+    plot_spectrogram(
         data,
         samplerate,
         frame_length=32,
@@ -117,7 +117,7 @@ def plot_with_different_parameters(data, samplerate):
         ax=axes[0],
     )
 
-    plot_spectorgram(
+    plot_spectrogram(
         data,
         samplerate,
         frame_length=8,
@@ -127,7 +127,7 @@ def plot_with_different_parameters(data, samplerate):
         ax=axes[1],
     )
 
-    plot_spectorgram(
+    plot_spectrogram(
         data,
         samplerate,
         frame_length=128,
@@ -157,7 +157,7 @@ def plot_with_fundamental_frequency(data, samplerate, frame_length, frame_shift,
     fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
 
-    plot_spectorgram(data, samplerate, frame_length, frame_shift, window, fig, ax)
+    plot_spectrogram(data, samplerate, frame_length, frame_shift, window, fig, ax)
     fundamental_frequencies, v_time_frame = get_fundamental_frequency(data, samplerate, frame_length, frame_shift)
     for i in range(harmonies):
         ax.plot(v_time_frame, np.multiply(fundamental_frequencies, i + 1), color='red', linestyle='--')
@@ -172,5 +172,3 @@ if __name__ == "__main__":
     # plot_spectorgram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
     # plot_with_different_parameters(data, samplerate)  # 2c
     # plot_with_fundamental_frequency(data, samplerate, frame_length=32, frame_shift=8, harmonies=16)  # 2d
-
-
