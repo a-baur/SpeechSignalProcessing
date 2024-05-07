@@ -1,4 +1,5 @@
 import soundfile as sf
+import sounddevice as sd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -46,7 +47,7 @@ def compute_stft(
     v_windows = np.apply_along_axis(lambda x: x * v_analysis_window, 1, v_windows)
     m_stft = np.fft.fft(v_windows)
     v_freq = np.fft.fftfreq(frame_length, d=1 / fs)
-    m_stft = m_stft[:, :m_stft.shape[1] // 2]
+    m_stft = m_stft[:, :m_stft.shape[1] // 2 + 1]
     v_freq = v_freq[:frame_length // 2]
 
     return m_stft, v_freq, v_time
@@ -83,12 +84,15 @@ def compute_istft(stft: np.ndarray, sampling_rate: int, frame_shift: int, synthe
 
 
 def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann", fig=None, ax=None):
-    v_analysis_window = get_window(window, get_index_from_time(frame_length / 1000, samplerate))
+    v_analysis_window = get_window(window, get_index_from_time(frame_length / 1000, samplerate), fftbins=True)
     m_stft, v_freq, v_time = compute_stft(data, samplerate, frame_length, frame_shift, v_analysis_window)
 
     if fig is None:
         fig = plt.figure()
         ax = fig.add_subplot(111)
+        draw = True
+    else:
+        draw = False
     im = ax.imshow(
         10 * np.log10(np.maximum(np.square(np.abs(m_stft.T)), 1e-15)),
         cmap='viridis',
@@ -100,6 +104,8 @@ def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann",
     ax.set_xlabel("Time [ms]")
     ax.set_ylabel("Frequency [Hz]")
     ax.set_title(f"Spectrogram (frame length: {frame_length}ms, frame shift: {frame_shift}ms)")
+    if draw:
+        plt.show()
     return ax
 
 
@@ -164,11 +170,34 @@ def plot_with_fundamental_frequency(data, samplerate, frame_length, frame_shift,
     plt.show()
 
 
+def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, window="hann", playback=True):
+    analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=True))
+
+    stft, freq, time = compute_stft(data, samplerate, frame_length, frame_shift, analysis_window)
+    reconstructed_signal = compute_istft(stft, samplerate, frame_shift, analysis_window)
+
+    if playback:
+        sd.play(reconstructed_signal, samplerate, blocking=True)
+
+    fig = plt.figure(figsize=(20, 10))
+    ax = fig.add_subplot(111)
+
+    ax.plot(reconstructed_signal, color='red')
+    ax.plot(data, alpha=0.5, color='blue')
+
+    ax.set_xlabel("Time [ms]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Reconstructed signal")
+    ax.legend(["Reconstructed signal", "Original signal"])
+
+    plt.show(
+
 
 if __name__ == "__main__":
     # data, samplerate = sf.read('audio/phone.wav')
     data, samplerate = sf.read('audio/speech1.wav')
 
-    # plot_spectorgram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
+    # plot_spectrogram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
     # plot_with_different_parameters(data, samplerate)  # 2c
     # plot_with_fundamental_frequency(data, samplerate, frame_length=32, frame_shift=8, harmonies=16)  # 2d
+    plot_reconstructed_signal(data, samplerate, frame_length=32, frame_shift=8, playback=False)  # 3
