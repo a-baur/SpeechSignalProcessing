@@ -190,7 +190,7 @@ def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, windo
     ax.set_title("Reconstructed signal")
     ax.legend(["Reconstructed signal", "Original signal"])
 
-    plt.show(
+    plt.show()
 
 
 if __name__ == "__main__":
