@@ -170,7 +170,7 @@ def plot_with_fundamental_frequency(data, samplerate, frame_length, frame_shift,
     plt.show()
 
 
-def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, window="hann", playback=True):
+def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, window="hann", playback=False):
     analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=True))
 
     stft, freq, time = compute_stft(data, samplerate, frame_length, frame_shift, analysis_window)
@@ -200,4 +200,4 @@ if __name__ == "__main__":
     # plot_spectrogram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
     # plot_with_different_parameters(data, samplerate)  # 2c
     # plot_with_fundamental_frequency(data, samplerate, frame_length=32, frame_shift=8, harmonies=16)  # 2d
-    plot_reconstructed_signal(data, samplerate, frame_length=32, frame_shift=8, playback=False)  # 3
+    plot_reconstructed_signal(data, samplerate, frame_length=32, frame_shift=16, playback=False)  # 3
