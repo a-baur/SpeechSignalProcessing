@@ -46,11 +46,22 @@ def compute_stft(
 
     v_windows = np.apply_along_axis(lambda x: x * v_analysis_window, 1, v_windows)
     m_stft = np.fft.fft(v_windows)
-    v_freq = np.fft.fftfreq(frame_length, d=1 / fs)
+    v_freq = np.fft.fftfreq(frame_length, d=1 / fs) # TODO: frequencies correct? convert_to_samples(.., , fs)
     m_stft = m_stft[:, :m_stft.shape[1] // 2 + 1]
     v_freq = v_freq[:frame_length // 2]
-
+    # print(m_stft.shape, v_freq.shape, v_time.shape)
+    # print(convert_to_samples(frame_length, fs))
     return m_stft, v_freq, v_time
+# Questions regarding 4:
+# Why are the computed spectra complex conjugate symmetric?
+# -> because real valued signals only consists of real valued frequencies and the complex parts need to resolve each other
+# What may be the advantage of only considering one half of the spectrum?
+# -> we know, that it is symmetric, so one half suffices to recunstruct the signal. Less data to store
+# How can you compute the frequency for each spectral bin? 
+# -> What is a spectral bin?
+# How many sampling points does the spectrum have after you removed the mirrored part while including the Nyquist frequency bin?
+# -> 0.5*frame_length + 1 = 257
+1
 
 
 def compute_istft(stft: np.ndarray, sampling_rate: int, frame_shift: int, synthesis_window: np.ndarray) -> [np.ndarray]:
@@ -107,7 +118,23 @@ def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann",
     if draw:
         plt.show()
     return ax
+# Questions regarding 2:
+# Why is the magnitude plotted in dB? Why is it reasonable to introduce a lower limit? What is the lower limit in the command given above in dB?
+# -> because the human ear perceives sound logarithmically, some frequencies cannot be perceived or because log cannot be <= 0 and become very large, -15 DB
 
+#b) Identify the voiced, unvoiced and silence segments in the spectrogram of the speech signal by eye.
+#Describe their appearance and what distinguishes them
+# -> voiced: lines, unvoiced: equally spread noise
+# Is it possible to identify the different voicing types more easily in comparison to the time domain representation?
+#-> yes, because the frequencies are more clearly visible. Especially the frequencies, because before guessing and pi mal daumen calculating
+
+# c) Produce the same plot as in a) but this time using a frame length corresponding to 8 ms and a frame shift of 2 ms. Further, create a plot for a frame length of 128 ms and a frame shift of 32 ms.
+# How well can you distinguish single sinusoidal components? Short impulses? Explain the influence of the different parameter settings.
+# -> 1. more "crips" time, but smeared frequencies, 2. better frequency resolution, smeared time 
+
+# d) Only for the speech signal estimate the fundamental ...
+# Do the estimated fundamental frequencies follow the harmonic structures in the spectrogram? You may also want to plot higher harmonics by multiplying your estimated fundamental frequencies with a positive integer value. This way, you can see the precision of the estimated frequencies more precisely
+# -> looks similar.
 
 def plot_with_different_parameters(data, samplerate):
 
@@ -171,7 +198,7 @@ def plot_with_fundamental_frequency(data, samplerate, frame_length, frame_shift,
 
 
 def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, window="hann", playback=False):
-    analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=True))
+    analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=True)) # fftbins = periodic
 
     stft, freq, time = compute_stft(data, samplerate, frame_length, frame_shift, analysis_window)
     reconstructed_signal = compute_istft(stft, samplerate, frame_shift, analysis_window)
@@ -191,6 +218,10 @@ def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, windo
     ax.legend(["Reconstructed signal", "Original signal"])
 
     plt.show()
+# Is it possible to perfectly reconstruct the input signal? Are there parts where a perfect reconstruction is not possible when a √Hann-window is used as analysis and synthesis window
+# -> yes, but window needs to be chosen such that the overlapping windows can be summed up to a constant. at the beginning and at the end it is not possiblek, because the overlapping windows do not sum to a constant.
+# What happens, when you unset the parameter periodic in the window generation? Which error can you observe in the reconstructed signal? Explain the difference in the window function which causes this behavior.
+# -> no error
 
 
 if __name__ == "__main__":

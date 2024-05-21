@@ -19,7 +19,7 @@ def my_windowing(v_signal: np.ndarray, sampling_rate: int, frame_length: int, fr
 
 
 def get_index_from_time(time, sampling_rate):
-    return int(np.round(time * sampling_rate, 0))
+    return np.round(time * sampling_rate, 0).astype(int)
 
 
 def get_input_split_size(signal_length, sampling_rate, frame_length, frame_shift):
