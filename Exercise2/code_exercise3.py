@@ -15,10 +15,7 @@ def compute_LP_coefficients(signal, M=12):
     return a
     
     
-    
-    
-
-def plot_frequency_response(a, fs, numPoints, whole=True):
+def plot_frequency_response(a, fs, numPoints, whole=False):
     """
     Plot the frequency response of the LP filter.
 
@@ -73,13 +70,13 @@ if __name__ == '__main__':
     # voiced is at v-time of 176, meaning it starts at 176-16=160 and ends at 176+16=192, this is index 10
     # unvoiced is at v-time 544, meaning it starts at 544-16=528 and ends at 544+16=560, this is index 33
     windows, v_time = my_windowing(data, samplerate, 32, 16)
-    voiced_segment = windows[10]
+    voiced_segment = windows[13]
     unvoiced_segment = windows[33]
     
     hann_window = get_window('hann', get_index_from_time(32 / 1000, samplerate))
     
-    voiced_segment = voiced_segment * hann_window
-    unvoiced_segment = unvoiced_segment * hann_window
+    # voiced_segment = voiced_segment * hann_window
+    # unvoiced_segment = unvoiced_segment * hann_window
     
     # No. 3
     a_voiced = compute_LP_coefficients(voiced_segment)
@@ -100,7 +97,7 @@ if __name__ == '__main__':
     # plot_dft_and_filter(dft_voiced, a_voiced, samplerate, len(voiced_segment))
     # plot_dft_and_filter(dft_unvoiced, a_unvoiced, samplerate, len(unvoiced_segment))
     
-    # No. 6
+    # # No. 6
     
     # plot_residual_signal(a_voiced, voiced_segment)
     # plot_residual_signal(a_unvoiced, unvoiced_segment) 
@@ -121,15 +118,15 @@ if __name__ == '__main__':
     # plot_dft_and_filter(dft_voiced, a_voiced, samplerate, len(voiced_segment), gain=2.8312536210370037e-05)
     # plot_dft_and_filter(dft_unvoiced, a_unvoiced, samplerate, len(unvoiced_segment), gain=0.00043334175528043006)
     
-    # square root of the energy of the residual signal
+    # # square root of the energy of the residual signal
     # plot_dft_and_filter(dft_voiced, a_voiced, samplerate, len(voiced_segment), gain=0.005320952)
     # plot_dft_and_filter(dft_unvoiced, a_unvoiced, samplerate, len(unvoiced_segment), gain=0.0208)
     
     # No. 8
     
-    # a_voiced_2 = compute_LP_coefficients(voiced_segment, M=2)
-    # a_voiced_16 = compute_LP_coefficients(voiced_segment, M=16)
-    # a_voiced_32 = compute_LP_coefficients(voiced_segment, M=32)
+    a_voiced_2 = compute_LP_coefficients(voiced_segment, M=2)
+    a_voiced_16 = compute_LP_coefficients(voiced_segment, M=16)
+    a_voiced_32 = compute_LP_coefficients(voiced_segment, M=32)
     
     # plot_dft_and_filter(dft_voiced, a_voiced_2, samplerate, len(voiced_segment))
     # plot_dft_and_filter(dft_voiced, a_voiced_16, samplerate, len(voiced_segment))
@@ -147,9 +144,14 @@ if __name__ == '__main__':
     pre_emphasized_voiced = sp.signal.lfilter([1, 0.95], 1, voiced_segment)
     pre_emphasized_unvoiced = sp.signal.lfilter([1, 0.95], 1, unvoiced_segment)
 
-    plot_pre_emphasized_signal_and_normal(voiced_segment, pre_emphasized_voiced)
-    plot_pre_emphasized_signal_and_normal(unvoiced_segment, pre_emphasized_unvoiced)
+    # plot_pre_emphasized_signal_and_normal(voiced_segment, pre_emphasized_voiced)
+    # plot_pre_emphasized_signal_and_normal(unvoiced_segment, pre_emphasized_unvoiced)
     
+    dft_pre_emph = np.fft.rfft(pre_emphasized_voiced)
+    
+    plot_dft_and_filter(dft_pre_emph, compute_LP_coefficients(pre_emphasized_voiced), samplerate, len(pre_emphasized_voiced))
+    
+    plot_dft_and_filter(dft_voiced, compute_LP_coefficients(voiced_segment), samplerate, len(voiced_segment))
     # a) Compare the results with and without pre-emphasis.
     # -> pre-emphasized singal makes high voice segments proportionally higher, so it is easier to detect them
 

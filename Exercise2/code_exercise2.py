@@ -46,9 +46,13 @@ def compute_stft(
 
     v_windows = np.apply_along_axis(lambda x: x * v_analysis_window, 1, v_windows)
     m_stft = np.fft.fft(v_windows)
-    v_freq = np.fft.fftfreq(frame_length, d=1 / fs) # TODO: frequencies correct? convert_to_samples(.., , fs)
-    m_stft = m_stft[:, :m_stft.shape[1] // 2 + 1]
-    v_freq = v_freq[:frame_length // 2]
+    v_freq = np.fft.fftfreq(frame_length, d=1/fs) # TODO: frequencies correct? convert_to_samples(.., , fs)
+    print(v_freq)
+    print(m_stft)
+    m_stft = m_stft[:, :m_stft.shape[1] // 2 +1]
+    v_freq = v_freq[:frame_length // 2 ]
+    print(frame_length // 2 +1) # TOOD: sollte eigentlich 257 sein und nciht 17 (also gleich fenster breite)
+    print(v_time.shape)
     # print(m_stft.shape, v_freq.shape, v_time.shape)
     # print(convert_to_samples(frame_length, fs))
     return m_stft, v_freq, v_time
@@ -111,7 +115,7 @@ def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann",
         aspect='auto',
         origin='lower',
     )
-    fig.colorbar(im, orientation='vertical', pad=0.2)
+    #fig.colorbar(im, orientation='vertical', pad=0.2)
     ax.set_xlabel("Time [ms]")
     ax.set_ylabel("Frequency [Hz]")
     ax.set_title(f"Spectrogram (frame length: {frame_length}ms, frame shift: {frame_shift}ms)")
@@ -120,7 +124,7 @@ def plot_spectrogram(data, samplerate, frame_length, frame_shift, window="hann",
     return ax
 # Questions regarding 2:
 # Why is the magnitude plotted in dB? Why is it reasonable to introduce a lower limit? What is the lower limit in the command given above in dB?
-# -> because the human ear perceives sound logarithmically, some frequencies cannot be perceived or because log cannot be <= 0 and become very large, -15 DB
+# -> because the human ear perceives sound logarithmically, some frequencies cannot be perceived or because log cannot be <= 0 and become very large, -150 DB, weil man nochmal mal 10 macht
 
 #b) Identify the voiced, unvoiced and silence segments in the spectrogram of the speech signal by eye.
 #Describe their appearance and what distinguishes them
@@ -198,7 +202,7 @@ def plot_with_fundamental_frequency(data, samplerate, frame_length, frame_shift,
 
 
 def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, window="hann", playback=False):
-    analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=True)) # fftbins = periodic
+    analysis_window = np.sqrt(get_window(window, convert_to_samples(frame_length, samplerate), fftbins=False)) # fftbins = periodic
 
     stft, freq, time = compute_stft(data, samplerate, frame_length, frame_shift, analysis_window)
     reconstructed_signal = compute_istft(stft, samplerate, frame_shift, analysis_window)
@@ -225,10 +229,13 @@ def plot_reconstructed_signal(data, samplerate, frame_length, frame_shift, windo
 
 
 if __name__ == "__main__":
-    # data, samplerate = sf.read('Audio/phone.wav')
+    #data, samplerate = sf.read('Audio/phone.wav')
     data, samplerate = sf.read('Audio/speech1.wav')
 
-    plot_spectrogram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
-    plot_with_different_parameters(data, samplerate)  # 2c
-    plot_with_fundamental_frequency(data, samplerate, frame_length=32, frame_shift=8, harmonies=16)  # 2d
-    plot_reconstructed_signal(data, samplerate, frame_length=32, frame_shift=16, playback=False)  # 3
+    # plot_spectrogram(data, samplerate, frame_length=32, frame_shift=8)  # 2a
+    # plot_with_different_parameters(data, samplerate)  # 2c
+    # plot_with_fundamental_frequency(data, samplerate, frame_length=32, frame_shift=8, harmonies=16)  # 2d
+    # plot_reconstructed_signal(data, samplerate, frame_length=32, frame_shift=16, playback=False)  # 3
+    
+    v_test_singal = np.ones(2048)
+    plot_reconstructed_signal(v_test_singal, 16000, 32, 16, playback=False) 
